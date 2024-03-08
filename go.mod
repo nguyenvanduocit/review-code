@@ -1,4 +1,4 @@
-module converter
+module codereview
 
 go 1.21.1
 

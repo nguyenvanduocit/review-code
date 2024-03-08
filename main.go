@@ -1,6 +1,6 @@
 package main
 
-import "converter/cmd/cli"
+import "codereview/cmd/cli"
 
 func main() {
 	cli.Execute()

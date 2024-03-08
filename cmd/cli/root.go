@@ -1,8 +1,8 @@
 package cli
 
 import (
-	"converter/pkg/gemini"
-	"converter/pkg/git"
+	"codereview/pkg/gemini"
+	"codereview/pkg/git"
 	"fmt"
 	"github.com/google/generative-ai-go/genai"
 	"github.com/spf13/cobra"
@@ -11,7 +11,7 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "review",
+	Use:   "codereview",
 	Short: "Review code using AI",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		diff, err := git.Diff()
@@ -19,17 +19,19 @@ var rootCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Println(diff)
-
 		model, closeGemini, err := gemini.NewGeminiClient(cmd.Context())
 		if err != nil {
 			return err
 		}
 		defer closeGemini()
 
+		if len(diff) == 0 {
+			fmt.Println("No changes to review, start by staging some changes with `git add`.")
+			os.Exit(0)
+		}
+
 		contents := []genai.Part{
-			genai.Text("Generate code review for the following diff:"),
-			genai.Text(diff),
+			genai.Text("You are a good code reviewer. Answer should be short, concise, straight forward. Do a code review for the following git diff, and provide feedback. ONLY response what need to be improve." + "\n" + "```" + "\n" + diff + "\n" + "```" + "\n" + "Feedback:" + "\n"),
 		}
 
 		aiResponse, err := model.GenerateContent(cmd.Context(), contents...)
